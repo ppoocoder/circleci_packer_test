@@ -1,0 +1,57 @@
+{
+  "variables": {
+    "ami_name": "baseline-ubuntu-1604",
+    "ami_base": "ami-008b09448b998a562",
+    "ami_sha":  "{{env `SHA`}}",
+    "aws_region": ""
+  },
+ 
+  "builders": [
+    {
+      "ami_description": "{{user `ami_name`}} AMI",
+      "ami_name": "{{user `ami_name`}} {{timestamp}}",
+      "ami_regions": [
+        "{{user `aws_region`}}"
+      ],
+      "instance_type": "t2.micro",
+      "region": "{{user `aws_region`}}",
+      "run_tags": {
+        "ami-create": "{{user `ami_name`}}"
+      },
+      "source_ami": "{{user `ami_base`}}",
+      "ssh_username": "ubuntu",
+      "tags": {
+        "OS_Name": "Ubuntu",
+        "OS_Version": "16.04",
+        "SHA": "{{user `ami_sha`}}",
+        "AMI": "{{user `ami_name`}}"
+      },
+      "type": "amazon-ebs"
+    }
+  ],
+  "post-processors": [
+    {
+      "output": "manifest-base.json",
+      "strip_path": true,
+      "type": "manifest"
+    }
+  ],
+  "provisioners": [
+    {
+      "inline": [
+        "while [ ! -f /var/lib/cloud/instance/boot-finished ]; do echo 'Waiting for cloud-init...'; sleep 1; done"
+      ],
+      "type": "shell"
+    },
+    {
+      "execute_command": "chmod +x {{ .Path }}; {{ .Vars }} sudo -E {{ .Path }}",
+      "scripts": [
+        "./base/tasks/baseline.sh",
+        "./base/tasks/cleanup.sh",
+        "./base/tasks/debug.sh"
+      ],
+      "type": "shell"
+    }
+  ]
+  
+}

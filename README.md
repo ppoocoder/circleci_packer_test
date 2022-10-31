@@ -1,2 +1,2 @@
-# circleci_packer_test
-# circleci_packer_test
+# circleci-packer
+Packer Workflows to validate, build and deploy AMIs using CircleCI
